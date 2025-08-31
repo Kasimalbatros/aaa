@@ -5,7 +5,7 @@ node {
 
     stage('Build') {
         echo "Building Docker Image..."
-        sh "docker build -t flask-app:latest ./app"
+        sh "docker build -t flask-app:latest ."
     }
 
     stage('Run Tests in Parallel') {
