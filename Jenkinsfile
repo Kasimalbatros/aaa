@@ -11,22 +11,28 @@ node {
     stage('Run Tests in Parallel') {
         parallel(
             "Unit Tests": {
-                echo "Running Unit Tests..."
-                sh "python -m unittest discover tests/unit"
+                echo "Running Unit Tests inside Docker..."
+                sh "docker run --rm -v \"${WORKSPACE}:/app\" flask-app:latest python -m unittest discover /app/tests/unit"
             },
             "Integration Tests": {
-                echo "Running Integration Tests..."
-                sh "python -m unittest discover tests/integration"
+                echo "Running Integration Tests inside Docker..."
+                sh "docker run --rm -v \"${WORKSPACE}:/app\" flask-app:latest python -m unittest discover /app/tests/integration"
             },
             "API Tests": {
-                echo "Running API Tests..."
-                sh "curl -s http://localhost:8000/"
+                echo "Running API Tests inside Docker..."
+                sh """
+                    docker run -d --name flask-app-test -p 8000:8000 -v \"${WORKSPACE}:/app\" flask-app:latest python main.py
+                    sleep 5
+                    curl -s http://127.0.0.1:8000/
+                    docker rm -f flask-app-test
+                """
             }
         )
     }
 
     stage('Deploy') {
         echo "Deploying Docker container..."
+        sh "docker rm -f flask-app || true"
         sh "docker run -d --name flask-app -p 8000:8000 flask-app:latest"
     }
 }
