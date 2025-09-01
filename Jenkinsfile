@@ -1,6 +1,6 @@
 node {
     stage('Checkout') {
-        git branch: 'master', url: 'https://github.com/Kasimalbatros/checkout-to-deploy-python-pipeline.git'
+        git branch: 'master', url: 'https://github.com/Kasimalbatros/aaa.git'
     }
 
     stage('Build') {
