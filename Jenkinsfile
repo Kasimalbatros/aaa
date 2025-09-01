@@ -22,23 +22,24 @@ node {
                 echo "Running API Tests inside Docker..."
                 sh """
                     docker rm -f flask-app-test || true
-                    docker run -d --name flask-app-test -p 8000:8000 -v "${WORKSPACE}:/app" flask-app:latest python /app/main.py
-                    
+                    docker run -d --name flask-app-test -p 8000:8000 -v \"${WORKSPACE}:/app\" flask-app:latest python /app/app/main.py
                     echo "Waiting for app to start..."
-                    for i in {1..10}; do
-                        if docker exec flask-app-test curl -s http://127.0.0.1:8000/ > /dev/null; then
+                    for i in {1..5}; do
+                        if docker exec flask-app-test curl -s http://127.0.0.1:8000/; then
                             echo "App is up!"
-                            exit 0
+                            break
+                        else
+                            echo "App not ready yet... retrying"
+                            sleep 2
                         fi
-                        echo "App not ready yet... retrying"
-                        sleep 2
                     done
-
-                    echo "App failed to start!"
-                    docker logs flask-app-test
-                    exit 1
+                    if ! docker exec flask-app-test curl -s http://127.0.0.1:8000/; then
+                        echo "App failed to start!"
+                        docker logs flask-app-test
+                        exit 1
+                    fi
+                    docker rm -f flask-app-test || true
                 """
-                sh "docker rm -f flask-app-test || true"
             }
         )
     }
@@ -46,7 +47,7 @@ node {
     stage('Deploy') {
         echo "Deploying Docker container..."
         sh "docker rm -f flask-app || true"
-        sh "docker run -d --name flask-app -p 8000:8000 flask-app:latest"
+        sh "docker run -d --name flask-app -p 8000:8000 flask-app:latest python /app/app/main.py"
     }
 }
 
