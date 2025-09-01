@@ -12,11 +12,11 @@ node {
         parallel(
             "Unit Tests": {
                 echo "Running Unit Tests inside Docker..."
-                sh "docker run --rm -v \"${WORKSPACE}:/app\" flask-app:latest python -m unittest discover /app/tests/unit"
+                sh "docker run --rm -v \"${WORKSPACE}:/app\" flask-app:latest pytest /app/tests/unit"
             },
             "Integration Tests": {
                 echo "Running Integration Tests inside Docker..."
-                sh "docker run --rm -v \"${WORKSPACE}:/app\" flask-app:latest python -m unittest discover /app/tests/integration"
+                sh "docker run --rm -v \"${WORKSPACE}:/app\" flask-app:latest pytest /app/tests/integration"
             },
             "API Tests": {
                 echo "Running API Tests inside Docker..."
@@ -24,8 +24,8 @@ node {
                     docker rm -f flask-app-test || true
                     docker run -d --name flask-app-test -p 8000:8000 -v \"${WORKSPACE}:/app\" flask-app:latest python /app/main.py
                     sleep 5
-                    curl -s http://127.0.0.1:8000/
-                    docker rm -f flask-app-test
+                    curl -s http://127.0.0.1:8000/ || exit 1
+                    docker rm -f flask-app-test || true
                 """
             }
         )
