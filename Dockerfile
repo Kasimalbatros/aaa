@@ -1,20 +1,14 @@
-# Use official Python image
-FROM python:3.11-slim
+FROM python:3.9-slim
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Copy requirements if any
-# COPY requirements.txt .
+# Install dependencies first (faster builds if code changes)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies (if requirements.txt exists)
-# RUN pip install -r requirements.txt
-
-# Copy app code
+# Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 8000
-
-# Run the Flask app
-CMD ["python", "main.py"]
+# Default command to run your app
+CMD ["python", "app/main.py"]
